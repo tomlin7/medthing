@@ -7,23 +7,23 @@ import (
 )
 
 type Patient struct {
-	ID          uuid.UUID `gorm:"type:uuid;primary_key;default:get_random_uuid()" json:"id"`
+	ID          uuid.UUID `gorm:"primaryKey;type:varchar(36)" json:"id"`
 	Name        string    `json:"name"`
 	DateOfBirth time.Time `json:"dateOfBirth"`
 	Gender      string    `json:"gender"`
 	Contact     string    `json:"contact"`
 	Address     string    `json:"address"`
-	BloodGroup  string    `json:"bloodgroup"`
+	BloodGroup  string    `json:"bloodGroup"`
 	Allergies   string    `json:"allergies"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 type Appointment struct {
-	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:get_random_uuid()" json:"id"`
+	ID        uuid.UUID `gorm:"primaryKey;type:varchar(36)" json:"id"`
 	PatientID uuid.UUID `json:"patientId"`
-	Patient   string    `json:"patient"`
-	DateTime  string    `json:"dateTime"`
+	Patient   Patient   `json:"patient"`
+	DateTime  time.Time `json:"dateTime"`
 	Type      string    `json:"type"`
 	Notes     string    `json:"notes"`
 	Status    string    `json:"status"`
@@ -32,37 +32,28 @@ type Appointment struct {
 }
 
 type Medication struct {
-	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:get_random_uuid()" json:"id"`
+	ID        uuid.UUID `gorm:"primaryKey;type:varchar(36)" json:"id"`
 	PatientID uuid.UUID `json:"patientId"`
-	Patient   string    `json:"patient"`
+	Patient   Patient   `json:"patient"`
 	Name      string    `json:"name"`
 	Dosage    string    `json:"dosage"`
 	Frequency string    `json:"frequency"`
-	StartDate string    `json:"startDate"`
-	EndDate   string    `json:"endDate"`
+	StartDate time.Time `json:"startDate"`
+	EndDate   time.Time `json:"endDate"`
 	Notes     string    `json:"notes"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
+
 type HealthMetric struct {
-	ID         uuid.UUID `gorm:"type:uuid;primary_key;default:get_random_uuid()" json:"id"`
+	ID         uuid.UUID `gorm:"primaryKey;type:varchar(36)" json:"id"`
 	PatientID  uuid.UUID `json:"patientId"`
-	Patient    string    `json:"patient"`
-	Type       string    `json:"type"`
-	Value      string    `json:"value"`
+	Patient    Patient   `json:"patient"`
+	Type       string    `json:"type"` // e.g., "blood_pressure", "blood_sugar", "weight"
+	Value      float64   `json:"value"`
 	Unit       string    `json:"unit"`
-	MeasuredAt string    `json:"measuredAt"`
+	MeasuredAt time.Time `json:"measuredAt"`
 	Notes      string    `json:"notes"`
 	CreatedAt  time.Time `json:"createdAt"`
 	UpdatedAt  time.Time `json:"updatedAt"`
-}
-
-type AnalysisRequest struct {
-	PatientID uuid.UUID `json:"patientId"`
-	DataType  string    `json:"dataType"` // metrics medications appointments
-}
-
-type AnalysisResponse struct {
-	Data    any    `json:"data"`
-	Summary string `json:"summary"`
 }
