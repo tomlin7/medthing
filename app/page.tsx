@@ -1,5 +1,5 @@
 import Dashboard from "@/components/Dashboard";
-import { Sidebar } from "lucide-react";
+import Sidebar from "@/components/Sidebar";
 
 export default function Home() {
   return (
