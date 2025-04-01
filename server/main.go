@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/sqlite"
@@ -30,6 +31,13 @@ func main() {
 	initDB()
 
 	app := fiber.New()
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{"Content-Type", "Authorization"},
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
+	}))
+	// app.Use(cors.Default())
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, world!")
