@@ -1,11 +1,118 @@
+"use client";
+
+import { getAppointments, getHealthTrends, getPatients } from "@/lib/api";
+import { format } from "date-fns";
 import { AlertTriangle, Calendar, TrendingUp, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import {
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+} from "chart.js";
+import { Line } from "react-chartjs-2";
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const Dashboard = () => {
+  const [stats, setStats] = useState({
+    totalPatients: 0,
+    appointmentsToday: 0,
+    criticalCases: 0,
+    followUps: 0,
+  });
+  const [recentPatients, setRecentPatients] = useState([]);
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
+  const [healthTrends, setHealthTrends] = useState({
+    labels: [],
+    datasets: [],
+  });
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const patientsRes = await getPatients();
+        const patients = patientsRes.data;
+        const appointmentsRes = await getAppointments();
+        const appointments = appointmentsRes.data;
+
+        const today = new Date();
+        const todayAppointments = appointments.filter(
+          (apt: any) =>
+            format(new Date(apt.dateTime), "yyyy-MM-dd") ===
+            format(today, "yyyy-MM-dd")
+        );
+        const criticalCases = patients.filter(
+          (patient: any) => patient.status === "Critical"
+        );
+
+        setStats({
+          totalPatients: patients.length,
+          appointmentsToday: todayAppointments.length,
+          criticalCases: criticalCases.length,
+          followUps: appointments.filter(
+            (apt: any) => new Date(apt.dateTime) > today
+          ).length,
+        });
+
+        setRecentPatients(patients.slice(0, 3));
+
+        setUpcomingAppointments(
+          appointments
+            .filter((apt: any) => new Date(apt.dateTime) > today)
+            .sort(
+              (a: any, b: any) =>
+                new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime()
+            )
+            .slice(0, 3)
+        );
+
+        if (patients.length > 0) {
+          const trendsRes = await getHealthTrends(patients[0].id);
+          const trendsData = trendsRes.data;
+
+          const labels = trendsData.dates;
+          const datasets = Object.keys(trendsData).map((metric: any) => ({
+            label: metric,
+            data: trendsData[metric],
+            borderColor: getRandomColor(),
+            tension: 0.1,
+          }));
+        }
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  const getRandomColor = () => {
+    const letters = "0123456789ABCDEF";
+    let color = "#";
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  };
+
   return (
     <div className="p-8">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-gray-900">Welcome back, Foo</h2>
-        <p className="text-gray-600">Here's an overview of your activities.</p>
+        <p className="text-gray-600">Here's your practice overview</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -13,33 +120,38 @@ const Dashboard = () => {
           {
             icon: Users,
             label: "Total Patients",
-            value: "1,234",
+            value: stats.totalPatients,
             trend: "+12%",
             color: "blue",
           },
           {
             icon: Calendar,
             label: "Appointments Today",
-            value: "8",
-            trend: "+2",
+            value: stats.appointmentsToday,
+            trend: `${stats.appointmentsToday > 0 ? "+" : ""}${
+              stats.appointmentsToday
+            }`,
             color: "green",
           },
           {
             icon: AlertTriangle,
             label: "Critical Cases",
-            value: "3",
-            trend: "-1",
+            value: stats.criticalCases,
+            trend: stats.criticalCases > 0 ? "Attention needed" : "All stable",
             color: "red",
           },
           {
             icon: TrendingUp,
             label: "Follow-ups Due",
-            value: "15",
-            trend: "+5",
+            value: stats.followUps,
+            trend: `${stats.followUps} pending`,
             color: "purple",
           },
         ].map((stat) => (
-          <div key={stat.label} className="bg-white p-6 shadow-sm">
+          <div
+            key={stat.label}
+            className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
+          >
             <div className="flex items-center justify-between mb-4">
               <div className={`p-2 rounded-lg bg-${stat.color}-50`}>
                 <stat.icon className={`h-6 w-6 text-${stat.color}-600`} />
@@ -56,49 +168,32 @@ const Dashboard = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 shadow-sm">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Recent Patients
           </h3>
           <div className="space-y-4">
-            {[
-              {
-                name: "Sarah Johnson",
-                condition: "Hypertension",
-                lastVisit: "2 days ago",
-                status: "Stable",
-              },
-              {
-                name: "Michael Chen",
-                condition: "Diabetes Type 2",
-                lastVisit: "1 week ago",
-                status: "Review",
-              },
-              {
-                name: "Emma Davis",
-                condition: "Asthma",
-                lastVisit: "3 days ago",
-                status: "Critical",
-              },
-            ].map((patient) => (
+            {recentPatients.map((patient: any) => (
               <div
-                key={patient.name}
-                className="flex items-center justify-between p-4 bg-gray-50 shadow-sm"
+                key={patient.id}
+                className="flex items-center justify-between p-4 rounded-lg bg-gray-50"
               >
                 <div>
                   <h4 className="font-medium text-gray-900">{patient.name}</h4>
                   <p className="text-sm text-gray-500">{patient.condition}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-gray-600">{patient.lastVisit}</p>
+                  <p className="text-sm text-gray-600">
+                    {format(new Date(patient.createdAt), "MMM dd, yyyy")}
+                  </p>
                   <span
                     className={`inline-block px-2 py-1 text-xs rounded-full ${
                       patient.status === "Critical"
-                        ? "bg-red-100 text-red-600"
+                        ? "bg-red-100 text-red-700"
                         : patient.status === "Review"
-                        ? "bg-yellow-100 text-yellow-600"
-                        : "bg-green-100 text-green-600"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-green-100 text-green-700"
                     }`}
                   >
                     {patient.status}
@@ -109,44 +204,52 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white p-6 shadow-sm">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Upcoming Follow-ups
           </h3>
           <div className="space-y-4">
-            {[
-              {
-                name: "Robert Wilson",
-                date: "Tomorrow, 10:00 AM",
-                type: "Blood Pressure Check",
-              },
-              {
-                name: "Lisa Anderson",
-                date: "Mar 15, 2:30 PM",
-                type: "Diabetes Review",
-              },
-              {
-                name: "James Taylor",
-                date: "Mar 16, 11:15 AM",
-                type: "Post-Surgery Check",
-              },
-            ].map((appointment) => (
+            {upcomingAppointments.map((appointment: any) => (
               <div
-                key={appointment.name}
-                className="flex items-center justify-between p-4 bg-gray-50"
+                key={appointment.id}
+                className="flex items-center justify-between p-4 rounded-lg bg-gray-50"
               >
                 <div>
                   <h4 className="font-medium text-gray-900">
-                    {appointment.name}
+                    {appointment.patient?.name}
                   </h4>
                   <p className="text-sm text-gray-500">{appointment.type}</p>
                 </div>
                 <p className="text-sm font-medium text-blue-600">
-                  {appointment.date}
+                  {format(new Date(appointment.dateTime), "MMM dd, h:mm a")}
                 </p>
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Health Trends
+        </h3>
+        <div className="h-64">
+          <Line
+            data={healthTrends}
+            options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "top" as const,
+                },
+                title: {
+                  display: true,
+                  text: "Patient Health Metrics Over Time",
+                },
+              },
+            }}
+          />
         </div>
       </div>
     </div>
