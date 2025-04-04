@@ -20,7 +20,7 @@ type Doctor struct {
 type Patient struct {
 	ID          uuid.UUID `gorm:"primaryKey;type:varchar(36)" json:"id"`
 	Name        string    `json:"name"`
-	DateOfBirth time.Time `json:"dateOfBirth"`
+	DateOfBirth string `json:"dateOfBirth"`
 	Gender      string    `json:"gender"`
 	Contact     string    `json:"contact"`
 	Address     string    `json:"address"`
@@ -34,7 +34,7 @@ type Appointment struct {
 	ID        uuid.UUID `gorm:"primaryKey;type:varchar(36)" json:"id"`
 	PatientID uuid.UUID `json:"patientId"`
 	Patient   Patient   `json:"patient"`
-	DateTime  time.Time `json:"dateTime"`
+	DateTime  string `json:"dateTime"`
 	Type      string    `json:"type"`
 	Notes     string    `json:"notes"`
 	Status    string    `json:"status"`
@@ -49,8 +49,8 @@ type Medication struct {
 	Name      string    `json:"name"`
 	Dosage    string    `json:"dosage"`
 	Frequency string    `json:"frequency"`
-	StartDate time.Time `json:"startDate"`
-	EndDate   time.Time `json:"endDate"`
+	StartDate string `json:"startDate"`
+	EndDate   string `json:"endDate"`
 	Notes     string    `json:"notes"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
@@ -63,7 +63,7 @@ type HealthMetric struct {
 	Type       string    `json:"type"` // e.g., "blood_pressure", "blood_sugar", "weight"
 	Value      float64   `json:"value"`
 	Unit       string    `json:"unit"`
-	MeasuredAt time.Time `json:"measuredAt"`
+	MeasuredAt string `json:"measuredAt"`
 	Notes      string    `json:"notes"`
 	CreatedAt  time.Time `json:"createdAt"`
 	UpdatedAt  time.Time `json:"updatedAt"`
