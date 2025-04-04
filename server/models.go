@@ -6,6 +6,17 @@ import (
 	"github.com/google/uuid"
 )
 
+type Doctor struct {
+	ID             uuid.UUID `gorm:"primaryKey;type:varchar(36)" json:"id"`
+	Email          string    `gorm:"unique;not null" json:"email"`
+	Password       string    `gorm:"not null" json:"-"`
+	Name           string    `json:"name"`
+	Specialization string    `json:"specialization"`
+	LicenseNumber  string    `json:"licenseNumber"`
+	CreatedAt      time.Time `json:"createdAt"`
+	UpdatedAt      time.Time `json:"updatedAt"`
+}
+
 type Patient struct {
 	ID          uuid.UUID `gorm:"primaryKey;type:varchar(36)" json:"id"`
 	Name        string    `json:"name"`

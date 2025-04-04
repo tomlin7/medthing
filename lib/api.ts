@@ -9,6 +9,25 @@ export const api = axios.create({
   },
 });
 
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export const login = (data: { email: string; password: string }) =>
+  api.post("/auth/login", data);
+
+export const signup = (data: {
+  email: string;
+  password: string;
+  name: string;
+  specialization: string;
+  licenseNumber: string;
+}) => api.post("/auth/signup", data);
+
 // patuient
 export const getPatients = () => api.get("/patients");
 export const getPatient = (id: string) => api.get(`/patients/${id}`);

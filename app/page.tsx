@@ -1,13 +1,28 @@
-import Dashboard from "@/components/Dashboard";
-import Sidebar from "@/components/Sidebar";
+"use client";
 
-export default function Home() {
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import Dashboard from "../components/Dashboard";
+import LandingPage from "../components/LandingPage";
+import LoginPage from "../components/LoginPage";
+import PrivateRoute from "../components/PrivateRoute";
+import SignupPage from "../components/SignupPage";
+
+export default function App() {
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <main className="flex-1 overflow-y-auto">
-        <Dashboard />
-      </main>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+      </Routes>
+    </Router>
   );
 }
