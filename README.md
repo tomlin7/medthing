@@ -69,3 +69,25 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Icons provided by [Lucide Icons](https://lucide.dev/)
 - UI components from [shadcn/ui](https://ui.shadcn.com/)
 - AI capabilities powered by [Google Gemini API](https://ai.google.dev/)
+
+## Environment Variables
+
+### Backend Environment Variables
+
+Create a `.env` file in the `server` directory with the following variables:
+
+```
+PORT=8000
+GENAI_API_KEY=your-google-ai-studio-api-key
+JWT_SECRET=your-secret-key-change-in-production
+ENV=development
+CORS_ORIGIN=http://localhost:3000
+```
+
+### Frontend Environment Variables
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
+```

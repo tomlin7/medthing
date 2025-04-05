@@ -120,6 +120,7 @@ The API returns appropriate HTTP status codes along with detailed error messages
    JWT_SECRET=your-secure-secret-key
    AI_API_KEY=your-ai-api-key
    ENV=development
+   CORS_ORIGIN=http://localhost:3000
    ```
 
    <!-- DB_PATH=./data/medthing.db

@@ -57,6 +57,12 @@ func main() {
 	// Start the rate limiter cleanup routine in a goroutine
 	go cleanupRateLimiter()
 
+	// Get CORS origin from environment or use default
+	corsOrigin := os.Getenv("CORS_ORIGIN")
+	if corsOrigin == "" {
+		corsOrigin = "http://localhost:3000" // Default fallback
+	}
+
 	// Create a new Fiber app
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
@@ -78,7 +84,7 @@ func main() {
 	// Middleware
 	app.Use(logger.New()) // Request logging
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
+		AllowOrigins: corsOrigin,
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
 	}))
