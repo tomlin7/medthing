@@ -169,7 +169,6 @@ export default function ReportDetailPage() {
         unit: 'mm',
         format: 'a4',
       });
-      
       // Set some basic styling
       const pageWidth = pdf.internal.pageSize.getWidth();
       const margin = 20;
@@ -182,26 +181,68 @@ export default function ReportDetailPage() {
         return y + (lines.length * lineHeight);
       };
       
-      // Add header with logo placeholder
+      // Add logo image
+      const logoPath = '/images/logo.png';
+      const logoWidth = 25;
+      const logoHeight = 25;
+      const logoX = margin;
+      const logoY = 10;
+      
+      // Add logo as image - using base64 to ensure it's embedded in the PDF
+      const img = new Image();
+      img.src = logoPath;
+      
+      // Use a promise to ensure the image is loaded before adding it to the PDF
+      await new Promise<void>((resolve) => {
+        img.onload = () => {
+          // Convert the image to base64
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0);
+          const base64 = canvas.toDataURL('image/png');
+          
+          // Add the image to the PDF
+          pdf.addImage(base64, 'PNG', logoX, logoY, logoWidth, logoHeight);
+          resolve();
+        };
+        img.onerror = () => {
+          // If image loading fails, just continue without the logo
+          console.error('Failed to load logo image');
+          resolve();
+        };
+      });
+      
+      // Add MedThing text logo
+      pdf.setFont("helvetica", "bold");
       pdf.setFontSize(20);
-      pdf.setTextColor(0, 0, 0);
-      pdf.text("Medical Report", margin, 20);
+      pdf.setTextColor(0, 102, 204); 
+      pdf.textWithLink("MedThing", logoX + logoWidth + 5, logoY + 15, { url: "https://medthing.vercel.app" });
+      
+      // Add app link below the logo
+      pdf.setFontSize(10);
+      pdf.setTextColor(0, 102, 204); // Blue color for the link
+      pdf.textWithLink("medthing.vercel.app", logoX + logoWidth + 5, logoY + 22, { url: "https://medthing.vercel.app" });
+      // pdf.textWithLink("medthing.vercel.app", logoX, logoY + logoHeight + 5, { url: "https://medthing.vercel.app" });
       
       // Add report type
       pdf.setFontSize(16);
-      pdf.text(report.reportType, margin, 30);
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(report.reportType, margin, logoY + logoHeight + 15);
       
       // Add generated date
       pdf.setFontSize(10);
       pdf.setTextColor(100, 100, 100);
-      pdf.text(`Generated on: ${formatDate(report.generatedAt)} at ${formatTime(report.generatedAt)}`, margin, 35);
+      pdf.text(`Generated on: ${formatDate(report.generatedAt)} at ${formatTime(report.generatedAt)}`, margin, logoY + logoHeight + 20);
       
       // Add horizontal line
       pdf.setDrawColor(200, 200, 200);
-      pdf.line(margin, 40, pageWidth - margin, 40);
+      pdf.line(margin, logoY + logoHeight + 25, pageWidth - margin, logoY + logoHeight + 25);
       
       // Add patient information
-      let yPos = 50;
+      let yPos = logoY + logoHeight + 35;
       pdf.setFontSize(12);
       pdf.setTextColor(0, 0, 0);
       pdf.text("Patient Information", margin, yPos);
@@ -275,7 +316,7 @@ export default function ReportDetailPage() {
       pdf.setFontSize(8);
       pdf.setTextColor(100, 100, 100);
       pdf.text(
-        "This is an AI-generated report. Please consult with a healthcare professional before making any medical decisions.", 
+        "This is an AI-generated report, generated with MedThing. Please consult with a healthcare professional before making any medical decisions.", 
         margin, 
         285
       );
