@@ -11,7 +11,7 @@ import (
 )
 
 // JWT secret key from environment variable, fallback to a default for dev
-var jwtSecret = []byte("your-secret-key")
+var jwtSecret = []byte("dummy-secret-key")
 
 // Rate limiter implementation
 type rateLimiterConfig struct {

@@ -1,3 +1,0 @@
-go mod tidy
-go build
-go run .
