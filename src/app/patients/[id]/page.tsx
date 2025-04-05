@@ -9,7 +9,8 @@ import {
   createMedication, 
   createHealthMetric, 
   deletePatient, 
-  deleteMedication 
+  deleteMedication,
+  generateReport
 } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from "@/components/Navbar";
 import { toast } from "sonner";
+import { 
+  Eye, 
+  Edit, 
+  Trash2, 
+  Calendar, 
+  Loader2,
+  Sparkles
+} from "lucide-react";
 
 export default function PatientDetailsPage() {
   const params = useParams();
@@ -45,6 +54,7 @@ export default function PatientDetailsPage() {
   const [metrics, setMetrics] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   
   // New medication form
   const [showMedicationDialog, setShowMedicationDialog] = useState(false);
@@ -180,6 +190,25 @@ export default function PatientDetailsPage() {
     }
   };
   
+  const handleGenerateReport = async () => {
+    try {
+      setIsGeneratingReport(true);
+      const response = await generateReport(patientId);
+      
+      if (response.success) {
+        toast.success("Report generated successfully");
+        router.push(`/reports/${response.data.id}`);
+      } else {
+        toast.error("Failed to generate report");
+      }
+    } catch (error) {
+      toast.error("Failed to generate report");
+      console.error("Error generating report:", error);
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
+  
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
@@ -237,11 +266,37 @@ export default function PatientDetailsPage() {
               {calculateAge(patient.dateOfBirth)} years • {patient.gender} • {patient.bloodGroup || "Blood Group: N/A"}
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => router.push(`/patients/${patientId}/edit`)}>
+          <div className="flex flex-wrap gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => router.push(`/patients/${patientId}/edit`)}
+            >
+              <Edit className="h-4 w-4 mr-2" />
               Edit Patient
             </Button>
-            <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
+            <Button 
+              variant="outline"
+              className="bg-primary/5 border-primary/10 hover:bg-primary/10 text-primary hover:text-primary" 
+              onClick={handleGenerateReport}
+              disabled={isGeneratingReport}
+            >
+              {isGeneratingReport ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Generate AI Report
+                </>
+              )}
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => setShowDeleteDialog(true)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
               Delete Patient
             </Button>
           </div>

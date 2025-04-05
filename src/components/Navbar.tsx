@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Menu, User, X } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface NavItem {
   label: string;
@@ -117,7 +118,9 @@ export default function Navbar() {
         </Sheet>
 
         {/* User menu */}
-        <div className="flex items-center">
+        <div className="flex items-center space-x-2">
+          <ThemeToggle />
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">

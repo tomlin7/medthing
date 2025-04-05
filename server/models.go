@@ -68,3 +68,17 @@ type HealthMetric struct {
 	CreatedAt  time.Time `json:"createdAt"`
 	UpdatedAt  time.Time `json:"updatedAt"`
 }
+
+// Report structure for storing AI-generated medical reports
+type Report struct {
+	ID           uuid.UUID `gorm:"primaryKey;type:varchar(36)" json:"id"`
+	PatientID    uuid.UUID `json:"patientId"`
+	PatientName  string    `json:"patientName"`
+	ReportType   string    `json:"reportType"`
+	Summary      string    `json:"summary"`
+	Content      string    `json:"content"` // JSON string containing sections and recommendations
+	GeneratedAt  time.Time `json:"generatedAt"`
+	Status       string    `json:"status"` // "processing", "completed", "failed"
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
+}

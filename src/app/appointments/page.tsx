@@ -27,11 +27,15 @@ import { toast } from "sonner";
 type Appointment = {
   id: string;
   patientId: string;
-  patient: {
+  patientName?: string;
+  patient?: {
     name: string;
   };
-  dateTime: string;
-  type: string;
+  date: string;
+  time: string;
+  dateTime?: string;
+  reason: string;
+  type?: string;
   status: string;
   notes: string;
 };
@@ -72,15 +76,25 @@ export default function AppointmentsPage() {
     }
   };
 
-  const formatDateTime = (dateTimeString: string) => {
-    const date = new Date(dateTimeString);
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(date);
+  const formatDateTime = (date: string, time: string) => {
+    if (!date) return "N/A";
+    
+    try {
+      // Create a date string that includes both date and time
+      const dateTimeString = `${date}T${time || '00:00'}`;
+      const dateObj = new Date(dateTimeString);
+      
+      return new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: time ? '2-digit' : undefined,
+        minute: time ? '2-digit' : undefined
+      }).format(dateObj);
+    } catch (error) {
+      console.error("Date formatting error:", error);
+      return `${date} ${time || ''}`;
+    }
   };
 
   const getStatusBadgeClass = (status: string) => {
@@ -130,7 +144,7 @@ export default function AppointmentsPage() {
                 <TableRow>
                   <TableHead>Patient</TableHead>
                   <TableHead>Date & Time</TableHead>
-                  <TableHead>Type</TableHead>
+                  <TableHead>Reason</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Notes</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -141,11 +155,15 @@ export default function AppointmentsPage() {
                   <TableRow key={appointment.id}>
                     <TableCell className="font-medium">
                       <Link href={`/patients/${appointment.patientId}`} className="hover:underline">
-                        {appointment.patient.name}
+                        {appointment.patientName || (appointment.patient && appointment.patient.name) || "Unknown"}
                       </Link>
                     </TableCell>
-                    <TableCell>{formatDateTime(appointment.dateTime)}</TableCell>
-                    <TableCell>{appointment.type}</TableCell>
+                    <TableCell>
+                      {appointment.dateTime 
+                        ? formatDateTime(appointment.dateTime, '') 
+                        : formatDateTime(appointment.date, appointment.time)}
+                    </TableCell>
+                    <TableCell>{appointment.reason || appointment.type || "N/A"}</TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(appointment.status)}`}>
                         {appointment.status}

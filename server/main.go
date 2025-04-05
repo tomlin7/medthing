@@ -24,7 +24,7 @@ func initDB() {
 	}
 
 	// Auto migrate all models
-	db.AutoMigrate(&Doctor{}, &Patient{}, &Appointment{}, &Medication{}, &HealthMetric{})
+	db.AutoMigrate(&Doctor{}, &Patient{}, &Appointment{}, &Medication{}, &HealthMetric{}, &Report{})
 	
 	// Check if we need to create a default admin doctor (for testing)
 	var count int64
@@ -135,11 +135,20 @@ func main() {
 	metrics.Get("/patient/:id", getPatientMetrics)
 	metrics.Post("/", createHealthMetric)
 	metrics.Get("/trends/:patientId", getHealthTrends)
+	metrics.Get("/stats/trends", getStatsTrends)
+	metrics.Get("/stats/monthly", getMonthlyStats)
 
-	// AI analysis routes - protected by JWT
-	ai := api.Group("/ai")
-	ai.Use(protected()) // All AI routes require authentication
-	ai.Post("/analyze", analyzePatientData)
+	// // AI analysis routes - protected by JWT
+	// ai := api.Group("/ai")
+	// ai.Use(protected()) // All AI routes require authentication
+	// ai.Post("/analyze", analyzePatientData)
+
+	// Reports routes - protected by JWT
+	reports := api.Group("/reports")
+	reports.Use(protected()) // All report routes require authentication
+	reports.Get("/", getReports)
+	reports.Get("/:id", getReport)
+	reports.Post("/generate", generateMedicalReport)
 
 	// Get port from environment variables or use default
 	port := os.Getenv("PORT")

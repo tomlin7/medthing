@@ -57,7 +57,30 @@ export const fetchApi = async (
   try {
     console.log(`Fetching ${API_URL}${endpoint}`, config);
     const response = await fetch(`${API_URL}${endpoint}`, config);
-    const rawData = await response.json();
+    
+    // Handle empty responses (common for DELETE operations)
+    const contentType = response.headers.get("content-type");
+    let rawData: any = null;
+    
+    if (contentType && contentType.includes("application/json") && response.status !== 204) {
+      // Try to parse JSON only if content exists and is JSON
+      const text = await response.text();
+      if (text) {
+        try {
+          rawData = JSON.parse(text);
+        } catch (e) {
+          console.warn("Failed to parse JSON response:", text);
+          // Create a default response
+          rawData = { success: response.ok, message: response.ok ? "Success" : "Error" };
+        }
+      } else {
+        // Empty body but successful response
+        rawData = { success: response.ok, message: response.ok ? "Success" : "Error" };
+      }
+    } else {
+      // Non-JSON response or empty response
+      rawData = { success: response.ok, message: response.ok ? "Success" : "Error" };
+    }
 
     // Validate and parse the response using Zod
     let parsedResponse: StandardResponse | any[];
@@ -249,6 +272,38 @@ export const createHealthMetric = (metric: any): Promise<StandardResponse> =>
 export const getHealthTrends = (patientId: string): Promise<StandardResponse> => 
   fetchApi(`/metrics/trends/${patientId}`);
 
-// AI Analysis API
-export const analyzePatientData = (data: { patientId: string; dataType: string }): Promise<StandardResponse> => 
-  fetchApi("/ai/analyze", { method: "POST", body: data }); 
+export const getStatsTrends = async (): Promise<StandardResponse> => {
+  const response = await fetchApi("/metrics/stats/trends");
+  return response;
+};
+
+export const getMonthlyStats = async (months: number = 6): Promise<StandardResponse> => {
+  const response = await fetchApi(`/metrics/stats/monthly?months=${months}`);
+  return response;
+};
+
+// Reports API
+export const getReports = async (): Promise<StandardResponse> => {
+  const response = await fetchApi("/reports");
+  return {
+    ...response,
+    data: Array.isArray(response.data) ? response.data : []
+  };
+};
+
+export const getReport = async (id: string): Promise<StandardResponse> => {
+  const response = await fetchApi(`/reports/${id}`);
+  return response;
+};
+
+export const generateReport = async (patientId: string): Promise<StandardResponse> => {
+  const response = await fetchApi("/reports/generate", { 
+    method: "POST", 
+    body: { patientId } 
+  });
+  return response;
+};
+
+// // AI Analysis API
+// export const analyzePatientData = (data: { patientId: string; dataType: string }): Promise<StandardResponse> => 
+//   fetchApi("/ai/analyze", { method: "POST", body: data }); 
