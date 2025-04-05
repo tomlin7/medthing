@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { API_URL } from "./api-client";
 
 type Doctor = {
   id: string;
@@ -68,7 +69,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log("Attempting login with:", { email });
       
-      const response = await fetch("http://localhost:8000/api/auth/login", {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -142,7 +143,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log("Attempting signup with:", { email: doctor.email });
       
-      const response = await fetch("http://localhost:8000/api/auth/signup", {
+      const response = await fetch(`${API_URL}/auth/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
