@@ -96,7 +96,21 @@ export default function AuthForm() {
       console.error("Signup failed:", err);
     }
   };
+
+  const handleGuestLogin = async () => {
+    const guestEmail = "guest@example.com";
+    const guestPassword = "guest123";
+    setLoginEmail(guestEmail);
+    setLoginPassword(guestPassword);
   
+    try {
+      await login(guestEmail, guestPassword);
+    } catch (err) {
+      toast.error("Guest login failed. Try again.");
+    }
+  };
+  
+   
   return (
     <div className="w-full max-w-md">
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "signup")} className="w-full">
@@ -140,9 +154,17 @@ export default function AuthForm() {
                 </div>
                 {error && <p className="text-sm text-red-500">{error}</p>}
               </CardContent>
-              <CardFooter>
-                <Button type="submit" className="w-full mt-5" disabled={isLoading}>
+              <CardFooter className="flex flex-col gap-2">
+                <Button type="submit" className="w-full mt-2" disabled={isLoading}>
                   {isLoading ? "Logging in..." : "Login"}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleGuestLogin}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Logging in..." : "Login as Guest"}
                 </Button>
               </CardFooter>
             </form>
